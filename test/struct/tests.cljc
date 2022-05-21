@@ -163,6 +163,41 @@
     (t/is (= data3 {}))
     (t/is (= errors3 {:a {:b "foobar"}}))))
 
+(t/deftest test-nested
+  (let [schema {:name  [[st/nested {:first st/string :last st/string}]]
+                :age st/integer
+                :division [[st/nested {:department [[st/nested {:name st/string
+                                                                :dev st/boolean-str}]]}]]}
+        input1 {:name {:first "First" :last "Name"}
+                :age 12
+                :division {:department {:name "product" :dev "true"}}}
+        input2 {:name {:first :a :last 1}
+                :age "12"
+                :division {:department {:name :product :dev true}}}
+        input3 {:name {:first "First" :last "Name"}
+                :age 12
+                :division {:department {:name 111 :dev "true"}}}
+        [error1 data1] (st/validate input1 schema)
+        [error2 data2] (st/validate input2 schema)
+        [error3 data3] (st/validate input3 schema)]
+    
+    (t/is (= nil error1))
+    (t/is (= {:name {:first "First" :last "Name"}
+              :age 12
+              :division {:department {:name "product" :dev true}}} 
+             data1))
+    
+    (t/is (= {:name {:first "must be a string" :last "must be a string"}
+              :age "must be a integer"
+              :division {:department {:name "must be a string" :dev "must be a boolean"}}}
+             error2))
+    (t/is (= {} data2))
+    
+    (t/is (= {:division {:department {:name "must be a string"}}}
+             error3))
+    (t/is (= {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}
+             data3))))
+
 ;; --- Entry point
 
 #?(:cljs
