@@ -27,13 +27,24 @@
       m)
     (dissoc m k)))
 
+(defn format-message
+  [msg opts args]
+  (let [tr (:translate opts identity)]
+    (apply str/format (tr msg) args)))
+
 (defn- prepare-message
-  [opts step]
-  (if (::nomsg opts)
+  [opts step context]
+  (cond
+    (::nomsg opts)
     ::nomsg
-    (let [msg (:message step "errors.invalid")
-          tr (:translate opts identity)]
-      (apply str/format (tr msg) (vec (:args step))))))
+
+    (fn? (:message step))
+    (let [msg-fn (:message step)]
+      (msg-fn context opts (vec (:args step))))
+
+    :else
+    (let [msg (:message step "errors.invalid")]
+      (format-message msg opts (vec (:args step))))))
 
 (def ^:const ^:private opts-params
   #{:coerce :message :optional})
@@ -102,17 +113,25 @@
 
           (and (nil? value) (:optional step))
           (recur skip errors data (rest steps))
-
-          (apply-validation step data value)
-          (let [value ((:coerce step identity) value)]
-            (recur skip errors (assoc-in data path value) (rest steps)))
-
+          
           :else
-          (let [message (prepare-message opts step)]
-            (recur (conj skip path)
-                   (assoc-in errors path message)
-                   (dissoc-in data path)
-                   (rest steps)))))
+          (let [validation-result (apply-validation step data value)
+                [valid? {context-value :value :as context}] (if (vector? validation-result)
+                                                              validation-result
+                                                              [validation-result {}])
+                value (if valid? (or context-value value) context-value)]
+
+            (if valid?
+              (let [value ((:coerce step identity) value)]
+                (recur skip errors (assoc-in data path value) (rest steps)))
+
+              (let [message (prepare-message opts step context)]
+                (recur (conj skip path)
+                       (assoc-in errors path message)
+                       (if (some? value)
+                         (assoc-in data path value)
+                         (dissoc-in data path))
+                       (rest steps)))))))
       [errors data])))
 
 ;; --- Public Api
