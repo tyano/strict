@@ -346,3 +346,15 @@
     {:message "longer than the maximum %s"
      :optional true
      :validate validate}))
+
+(def nested
+  {:message (fn [{:keys [error]} opts args]
+              error)
+   :optional false
+   :validate (fn [v validator & [opts]]
+               (let [[errors success] (validate v validator opts)
+                     context {:error (not-empty errors)
+                              :value (not-empty success)}]
+                 (if (seq errors)
+                   [false context]
+                   [true context])))})
