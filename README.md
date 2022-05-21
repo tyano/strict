@@ -39,14 +39,16 @@ You can nest another validator by using [st/nested another-validator].
        {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}]
 ```
 
-# validator's :validate function can return a vector of [result context]
+# Newly added functionalities
+
+## validator's :validate function can return a vector of [result context]
 
 From 1.5.0, validator can return a vector instead of a boolean result.
 the vector must contain [result context]. result must be a boolean and context must be a map.
 the context will be passed to :message fn.
 
 
-# validator's :message can be a function
+## validator's :message can be a function
 
 From 1.5.0, validator's :message can be a function returning an any object instead of a simple string.
 The message function must have 3 arities of [context opts args].
