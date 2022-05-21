@@ -15,7 +15,7 @@ Original Documentation: http://funcool.github.io/struct/latest/
 
 You can nest another validator by using [st/nested another-validator].
 
-```
+```clojure
 (def user-validator {:name  [[st/nested {:first st/string :last st/string}]]
                      :age st/integer
                      :division [[st/nested {:department [[st/nested {:name st/string
