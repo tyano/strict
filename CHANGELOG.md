@@ -1,5 +1,13 @@
 # Changelog #
 
+## Version 1.5.0 ##
+
+Date: 2022-05-21
+
+- Added a new validator 'nested'.
+- validator can return a vector of [validation-result validation-context] typed as [boolean? map?].
+- validator's :message now can be a fn that accepts validation-context, opts and args.
+
 ## Version 1.3.0 ##
 
 Date: 2018-06-02
