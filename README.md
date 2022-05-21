@@ -9,8 +9,9 @@ This is originally created by funcool and personally maintained for adding some 
 
 Original Documentation: http://funcool.github.io/struct/latest/
 
+# Newly added functionalities
 
-# 'nested' validator
+## 'nested' validator
 
 You can nest another validator by using [st/nested another-validator].
 
@@ -39,7 +40,6 @@ You can nest another validator by using [st/nested another-validator].
        {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}]
 ```
 
-# Newly added functionalities
 
 ## validator's :validate function can return a vector of [result context]
 
