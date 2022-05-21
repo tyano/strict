@@ -5,7 +5,7 @@ A structural validation library for Clojure(Script).
 
 [![Clojars Project](https://clojars.org/org.clojars.t_yano/struct/latest-version.svg)](https://clojars.org/org.clojars.t_yano/struct)
 
-This is originally created by funcool and personally maintained for adding some small new functionalities.
+This is originally created by [funcool](https://github.com/funcool/struct) and personally maintained for adding some small new functionalities.
 
 Original Documentation: http://funcool.github.io/struct/latest/
 
