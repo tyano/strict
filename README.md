@@ -37,7 +37,7 @@ You can nest another validator by using [st/nested another-validator].
               :division {:department {:name 111 :dev "true"}}} user-validator)
 
 ;; => [{:division {:department {:name "must be a string"}}}
-       {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}]
+;;     {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}]
 ```
 
 
