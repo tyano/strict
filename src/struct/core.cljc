@@ -52,6 +52,23 @@
 (def ^:private notopts?
   (complement opts-params))
 
+(declare nested validator?)
+
+(defn- simple-map?
+  [m]
+  (and (map? m) (not (validator? m))))
+
+(defn- convert-to-nested-validator
+  [schema]
+  [nested (reduce-kv
+           (fn [result k v]
+             (let [new-value (if (simple-map? v)
+                               [(convert-to-nested-validator v)]
+                               v)]
+               (assoc result k new-value)))
+           {}
+           schema)])
+
 (defn- build-step
   [key item]
   (letfn [(coerce-key [key] (if (vector? key) key [key]))]
@@ -66,9 +83,12 @@
 
 (defn- normalize-step-map-entry
   [acc key value]
-  (if (vector? value)
-    (reduce #(conj! %1 (build-step key %2)) acc value)
-    (conj! acc (build-step key value))))
+  (let [converted-value (if (simple-map? value)
+                          [(convert-to-nested-validator value)]
+                          value)]
+    (if (vector? converted-value)
+      (reduce #(conj! %1 (build-step key %2)) acc converted-value)
+      (conj! acc (build-step key converted-value)))))
 
 (defn- normalize-step-entry
   [acc [key & values]]
@@ -113,7 +133,7 @@
 
           (and (nil? value) (:optional step))
           (recur skip errors data (rest steps))
-          
+
           :else
           (let [validation-result (apply-validation step data value)
                 [valid? {context-value :value :as context}] (if (vector? validation-result)
@@ -187,174 +207,206 @@
   (nil? (first (validate-single data schema {::nomsg true}))))
 
 ;; --- Validators
+(defrecord Validator [name message optional validate])
+
+(defn validator [spec-map] (map->Validator spec-map))
+
+(defn validator? [obj] (instance? Validator obj))
 
 (def keyword
-  {:message "must be a keyword"
-   :optional true
-   :validate keyword?
-   :coerce identity})
+  (validator {:name "keyword"
+              :message "must be a keyword"
+              :optional true
+              :validate keyword?
+              :coerce identity}))
 
 (def uuid
-  {:message "must be an uuid"
-   :optional true
-   :validate #?(:clj #(instance? java.util.UUID %)
-                :cljs #(instance? cljs.core.UUID %))})
+  (validator {:name "uuid"
+              :message "must be an uuid"
+              :optional true
+              :validate #?(:clj #(instance? java.util.UUID %)
+                           :cljs #(instance? cljs.core.UUID %))}))
 
 (def ^:const ^:private +uuid-re+
   #"^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 
 (def uuid-str
-  {:message "must be an uuid"
-   :optional true
-   :validate #(and (string? %)
-                   (re-seq +uuid-re+ %))
-   :coerce #?(:clj #(java.util.UUID/fromString %)
-              :cljs #(uuid %))})
+  (validator {:name "uuid-str"
+              :message "must be an uuid"
+              :optional true
+              :validate #(and (string? %)
+                              (re-seq +uuid-re+ %))
+              :coerce #?(:clj #(java.util.UUID/fromString %)
+                         :cljs #(uuid %))}))
 
 (def email
   (let [rx #"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"]
-    {:message "must be a valid email"
-     :optional true
-     :validate #(and (string? %)
-                     (re-seq rx %))}))
+    (validator {:name "email"
+                :message "must be a valid email"
+                :optional true
+                :validate #(and (string? %)
+                                (re-seq rx %))})))
 
 (def required
-  {:message "this field is mandatory"
-   :optional false
-   :validate #(if (string? %)
-                 (not (empty? %))
-                 (not (nil? %)))})
+  (validator {:name "required"
+              :message "this field is mandatory"
+              :optional false
+              :validate #(if (string? %)
+                           (not (empty? %))
+                           (not (nil? %)))}))
 
 (def number
-  {:message "must be a number"
-   :optional true
-   :validate number?})
+  (validator {:name "number"
+              :message "must be a number"
+              :optional true
+              :validate number?}))
 
 (def number-str
-  {:message "must be a number"
-   :optional true
-   :validate #(or (number? %) (and (string? %) (str/numeric? %)))
-   :coerce #(if (number? %) % (str/parse-number %))})
+  (validator {:name "number-str"
+              :message "must be a number"
+              :optional true
+              :validate #(or (number? %) (and (string? %) (str/numeric? %)))
+              :coerce #(if (number? %) % (str/parse-number %))}))
 
 (def integer
-  {:message "must be a integer"
-   :optional true
-   :validate #?(:cljs #(js/Number.isInteger %)
-                :clj #(integer? %))})
+  (validator {:name "integer"
+              :message "must be a integer"
+              :optional true
+              :validate #?(:cljs #(js/Number.isInteger %)
+                           :clj #(integer? %))}))
 
 (def integer-str
-  {:message "must be a long"
-   :optional true
-   :validate #(or (number? %) (and (string? %) (str/numeric? %)))
-   :coerce #(if (number? %) (int %) (str/parse-int %))})
+  (validator {:name "integer-str"
+              :message "must be a long"
+              :optional true
+              :validate #(or (number? %) (and (string? %) (str/numeric? %)))
+              :coerce #(if (number? %) (int %) (str/parse-int %))}))
 
 (def boolean
-  {:message "must be a boolean"
-   :optional true
-   :validate #(or (= false %) (= true %))})
+  (validator {:name "boolean"
+              :message "must be a boolean"
+              :optional true
+              :validate #(or (= false %) (= true %))}))
 
 (def boolean-str
-  {:message "must be a boolean"
-   :optional true
-   :validate #(and (string? %)
-                   (re-seq #"^(?:t|true|false|f|0|1)$" %))
-   :coerce #(contains? #{"t" "true" "1"} %)})
+  (validator {:name "boolean-str"
+              :message "must be a boolean"
+              :optional true
+              :validate #(and (string? %)
+                              (re-seq #"^(?:t|true|false|f|0|1)$" %))
+              :coerce #(contains? #{"t" "true" "1"} %)}))
 
 (def string
-  {:message "must be a string"
-   :optional true
-   :validate string?})
+  (validator {:name "string"
+              :message "must be a string"
+              :optional true
+              :validate string?}))
 
 (def string-like
-  {:message "must be a string"
-   :optional true
-   :coerce str})
+  (validator {:name "string-like"
+              :message "must be a string"
+              :optional true
+              :coerce str}))
 
 (def in-range
-  {:message "not in range %s and %s"
-   :optional true
-   :validate #(and (number? %1)
-                   (number? %2)
-                   (number? %3)
-                   (<= %2 %1 %3))})
+  (validator {:name "in-range"
+              :message "not in range %s and %s"
+              :optional true
+              :validate #(and (number? %1)
+                              (number? %2)
+                              (number? %3)
+                              (<= %2 %1 %3))}))
 
 (def positive
-  {:message "must be positive"
-   :optional true
-   :validate pos?})
+  (validator {:name "positive"
+              :message "must be positive"
+              :optional true
+              :validate pos?}))
 
 (def negative
-  {:message "must be negative"
-   :optional true
-   :validate neg?})
+  (validator {:name "negative"
+              :message "must be negative"
+              :optional true
+              :validate neg?}))
 
 (def map
-  {:message "must be a map"
-   :optional true
-   :validate map?})
+  (validator {:name "map"
+              :message "must be a map"
+              :optional true
+              :validate map?}))
 
 (def set
-  {:message "must be a set"
-   :optional true
-   :validate set?})
+  (validator {:name "set"
+              :message "must be a set"
+              :optional true
+              :validate set?}))
 
 (def coll
-  {:message "must be a collection"
-   :optional true
-   :validate coll?})
+  (validator {:name "coll"
+              :message "must be a collection"
+              :optional true
+              :validate coll?}))
 
 (def vector
-  {:message "must be a vector instance"
-   :optional true
-   :validate vector?})
+  (validator {:name "vector"
+              :message "must be a vector instance"
+              :optional true
+              :validate vector?}))
 
 (def every
-  {:message "must match the predicate"
-   :optional true
-   :validate #(every? %2 %1)})
+  (validator {:name "every"
+              :message "must match the predicate"
+              :optional true
+              :validate #(every? %2 %1)}))
 
 (def member
-  {:message "not in coll"
-   :optional true
-   :validate #(some #{%1} %2)})
+  (validator {:name "member"
+              :message "not in coll"
+              :optional true
+              :validate #(some #{%1} %2)}))
 
 (def function
-  {:message "must be a function"
-   :optional true
-   :validate ifn?})
+  (validator {:name "function"
+              :message "must be a function"
+              :optional true
+              :validate ifn?}))
 
 (def identical-to
-  {:message "does not match"
-   :optional true
-   :state true
-   :validate (fn [state v ref]
-               (let [prev (get state ref)]
-                 (= prev v)))})
+  (validator {:name "identical-to"
+              :message "does not match"
+              :optional true
+              :state true
+              :validate (fn [state v ref]
+                          (let [prev (get state ref)]
+                            (= prev v)))}))
 
 (def min-count
   (letfn [(validate [v minimum]
             {:pre [(number? minimum)]}
             (>= (count v) minimum))]
-    {:message "less than the minimum %s"
-     :optional true
-     :validate validate}))
+    (validator {:name "min-count"
+                :message "less than the minimum %s"
+                :optional true
+                :validate validate})))
 
 (def max-count
   (letfn [(validate [v maximum]
             {:pre [(number? maximum)]}
             (<= (count v) maximum))]
-    {:message "longer than the maximum %s"
-     :optional true
-     :validate validate}))
+    (validator {:name "max-count"
+                :message "longer than the maximum %s"
+                :optional true
+                :validate validate})))
 
 (def nested
-  {:message (fn [{:keys [error]} opts args]
-              error)
-   :optional false
-   :validate (fn [v validator & [opts]]
-               (let [[errors success] (validate v validator opts)
-                     context {:error (not-empty errors)
-                              :value (not-empty success)}]
-                 (if (seq errors)
-                   [false context]
-                   [true context])))})
+  (validator {:name "nested"
+              :message (fn [{:keys [error]} opts args]
+                         error)
+              :optional false
+              :validate (fn [v validator & [opts]]
+                          (let [[errors success] (validate v validator opts)
+                                context {:error (not-empty errors)
+                                         :value (not-empty success)}]
+                            (if (seq errors)
+                              [false context]
+                              [true context])))}))
