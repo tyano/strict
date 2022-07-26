@@ -11,7 +11,7 @@
     :target :nodejs
     :pretty-print true
     :optimizations :advanced
-    :language-in  :ecmascript5
-    :language-out :ecmascript5
+    :language-in  :ecmascript-2017
+    :language-out :ecmascript-2017
     :verbose true})
   (println "... done. Elapsed" (/ (- (System/nanoTime) start) 1e9) "seconds"))
