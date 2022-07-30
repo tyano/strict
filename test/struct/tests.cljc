@@ -234,6 +234,20 @@
     (t/is (= {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}
              data3))))
 
+
+(t/deftest test-coll-of-validator
+  (let [schema {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]}
+        input1 {:age [10 20 15]}
+        input2 {:age [10 20 21]}
+        [error1 data1] (st/validate input1 schema)
+        [error2 data2] (st/validate input2 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= {:age [10 20 15]} data1))
+
+    (t/is (= {:age [nil nil "not in range 10 and 20"]} error2))
+    (t/is (= {:age [10 20 nil]} data2))))
+
 ;; --- Entry point
 
 #?(:cljs

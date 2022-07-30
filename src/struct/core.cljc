@@ -1,6 +1,7 @@
 (ns struct.core
   (:refer-clojure :exclude [keyword uuid vector boolean long map set])
-  (:require [cuerdas.core :as str]))
+  (:require [cuerdas.core :as str]
+            [clojure.core :as core]))
 
 ;; --- Impl details
 
@@ -400,13 +401,27 @@
 
 (def nested
   (validator {:name "nested"
-              :message (fn [{:keys [error]} opts args]
-                         error)
+              :message (fn [{:keys [error]} opts args] error)
               :optional false
-              :validate (fn [v validator & [opts]]
-                          (let [[errors success] (validate v validator opts)
+              :validate (fn [v spec & [opts]]
+                          (let [[errors success] (validate v spec opts)
                                 context {:error (not-empty errors)
                                          :value (not-empty success)}]
                             (if (seq errors)
                               [false context]
                               [true context])))}))
+
+(def coll-of
+  (letfn [(data-or-nil [coll] (when-not (empty? (sequence (filter some?) coll)) coll))]
+    (validator {:name "coll-of"
+                :message (fn [{:keys [error]} opts args]
+                           error)
+                :optional false
+                :validate (fn [v validators & [opts]]
+                            (let [results (core/map #(validate {:value %} {:value validators} opts) v)
+                                  errors  (sequence (comp (core/map first) (core/map :value)) results)
+                                  values  (sequence (comp (core/map second) (core/map :value)) results)
+                                  context {:error (data-or-nil errors) :value (data-or-nil values)}]
+                              (if (data-or-nil errors)
+                                [false context]
+                                [true context])))})))
