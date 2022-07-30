@@ -248,6 +248,20 @@
     (t/is (= {:age [nil nil "not in range 10 and 20"]} error2))
     (t/is (= {:age [10 20 nil]} data2))))
 
+
+(t/deftest test-coll-of-validator-automatic-nested-conversion
+  (let [schema {:people [[st/coll-of {:name [st/string] :age [st/integer-str]}]]}
+        input1 {:people [{:name "Test1" :age 20} {:name "Test2" :age "21"}]}
+        input2 {:people [{:name "Test1" :age 20} {:name "Test2" :age "abc"}]}
+        [error1 data1] (st/validate input1 schema)
+        [error2 data2] (st/validate input2 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= {:people [{:name "Test1" :age 20} {:name "Test2" :age 21}]} data1))
+
+    (t/is (= {:people [nil {:age "must be a long"}]} error2))
+    (t/is (= {:people [{:name "Test1" :age 20} {:name "Test2"}]} data2))))
+
 ;; --- Entry point
 
 #?(:cljs
