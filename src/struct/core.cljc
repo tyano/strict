@@ -416,7 +416,7 @@
     (validator {:name "coll-of"
                 :message (fn [{:keys [error]} opts args]
                            error)
-                :optional false
+                :optional true
                 :validate (fn [v validators & [opts]]
                             (let [results (core/map #(validate {:value %} {:value validators} opts) v)
                                   errors  (sequence (comp (core/map first) (core/map :value)) results)
