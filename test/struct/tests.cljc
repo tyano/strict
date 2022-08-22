@@ -234,6 +234,22 @@
     (t/is (= {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}
              data3))))
 
+(t/deftest test-nested-on-not-map-data
+  (let [schema {:name  [[st/nested {:first st/string :last st/string}]]
+                :age st/integer
+                :division [[st/nested {:department [[st/nested {:name st/string
+                                                                :dev st/boolean-str}]]}]]}
+        input1 {:name [1 2 3]
+                :age 12
+                :division {:department {:name "product" :dev "true"}}}
+
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= {:name "must be a map"} error1))
+    (t/is (= {:age 12
+              :division {:department {:name "product" :dev true}}}
+             data1))))
+
 
 (t/deftest test-coll-of-validator
   (let [schema {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]}
@@ -261,6 +277,14 @@
 
     (t/is (= {:people [nil {:age "must be a long"}]} error2))
     (t/is (= {:people [{:name "Test1" :age 20} {:name "Test2"}]} data2))))
+
+(t/deftest test-coll-of-validator-on-not-list-data
+  (let [schema {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]}
+        input1 {:age {:test 1}}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= {:age "must be a list"} error1))
+    (t/is (= {} data1))))
 
 ;; --- Entry point
 

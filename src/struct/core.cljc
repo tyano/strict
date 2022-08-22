@@ -147,6 +147,7 @@
                 (recur skip errors (assoc-in data path value) (rest steps)))
 
               (let [message (prepare-message opts step context)]
+                (println "value = " value ", data = " data)
                 (recur (conj skip path)
                        (assoc-in errors path message)
                        (if (some? value)
@@ -404,12 +405,14 @@
               :message (fn [{:keys [error]} opts args] error)
               :optional false
               :validate (fn [v spec & [opts]]
-                          (let [[errors success] (validate v spec opts)
-                                context {:error (not-empty errors)
-                                         :value (not-empty success)}]
-                            (if (seq errors)
-                              [false context]
-                              [true context])))}))
+                          (if-not (map? v)
+                            [false {:error "must be a map"}]
+                            (let [[errors success] (validate v spec opts)
+                                  context {:error (not-empty errors)
+                                           :value (not-empty success)}]
+                              (if (seq errors)
+                                [false context]
+                                [true context]))))}))
 
 (def coll-of
   (letfn [(data-or-nil [coll] (when-not (empty? (sequence (filter some?) coll)) coll))]
@@ -418,10 +421,12 @@
                            error)
                 :optional true
                 :validate (fn [v validators & [opts]]
-                            (let [results (core/map #(validate {:value %} {:value validators} opts) v)
-                                  errors  (sequence (comp (core/map first) (core/map :value)) results)
-                                  values  (sequence (comp (core/map second) (core/map :value)) results)
-                                  context {:error (data-or-nil errors) :value (data-or-nil values)}]
-                              (if (data-or-nil errors)
-                                [false context]
-                                [true context])))})))
+                            (if-not (sequential? v)
+                              [false {:error "must be a list"}]
+                              (let [results (core/map #(validate {:value %} {:value validators} opts) v)
+                                    errors  (sequence (comp (core/map first) (core/map :value)) results)
+                                    values  (sequence (comp (core/map second) (core/map :value)) results)
+                                    context {:error (data-or-nil errors) :value (data-or-nil values)}]
+                                (if (data-or-nil errors)
+                                  [false context]
+                                  [true context]))))})))
