@@ -60,36 +60,30 @@
   (and (map? m) (not (validator? m))))
 
 (defn- convert-to-nested-validator
-  [schema]
-  [nested (reduce-kv
-           (fn [result k v]
-             (let [new-value (if (simple-map? v)
-                               [(convert-to-nested-validator v)]
-                               v)]
-               (assoc result k new-value)))
-           {}
-           schema)])
+  [validator]
+  (if (simple-map? validator)
+    [nested validator]
+    validator))
 
 (defn- build-step
   [key item]
   (letfn [(coerce-key [key] (if (vector? key) key [key]))]
-    (if (vector? item)
-      (let [validator (first item)
-            result (split-with notopts? (rest item))
-            args (first result)
-            opts (apply hash-map (second result))]
-        (merge (assoc validator :args args :path (coerce-key key))
-               (select-keys opts [:coerce :message :optional])))
-      (assoc item :args [] :path (coerce-key key)))))
+    (let [item (convert-to-nested-validator item)]
+      (if (vector? item)
+        (let [validator (first item)
+              result (split-with notopts? (rest item))
+              args (first result)
+              opts (apply hash-map (second result))]
+          (merge (assoc validator :args args :path (coerce-key key))
+                 (select-keys opts [:coerce :message :optional])))
+
+        (assoc item :args [] :path (coerce-key key))))))
 
 (defn- normalize-step-map-entry
   [acc key value]
-  (let [converted-value (if (simple-map? value)
-                          [(convert-to-nested-validator value)]
-                          value)]
-    (if (vector? converted-value)
-      (reduce #(conj! %1 (build-step key %2)) acc converted-value)
-      (conj! acc (build-step key converted-value)))))
+  (if (vector? value)
+    (reduce #(conj! %1 (build-step key %2)) acc value)
+    (conj! acc (build-step key value))))
 
 (defn- normalize-step-entry
   [acc [key & values]]
@@ -147,7 +141,6 @@
                 (recur skip errors (assoc-in data path value) (rest steps)))
 
               (let [message (prepare-message opts step context)]
-                (println "value = " value ", data = " data)
                 (recur (conj skip path)
                        (assoc-in errors path message)
                        (if (some? value)
@@ -169,8 +162,8 @@
   ([data schema {:keys [strip]
                  :or {strip false}
                  :as opts}]
-   (let [steps (build-steps schema)
-         data (if strip (strip-values data steps) data)]
+   (let [steps  (build-steps schema)
+         data   (if strip (strip-values data steps) data)]
      (validate-internal data steps opts))))
 
 (defn validate-single
