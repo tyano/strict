@@ -67,17 +67,22 @@
 
 (defn- build-step
   [key item]
-  (letfn [(coerce-key [key] (if (vector? key) key [key]))]
+  (letfn [(coerce-key [key] (if (vector? key) key [key]))
+          (check-validator [validator] (when-not (validator? validator)
+                                         (throw (ex-info (str "Invalid validator. validators must be a Validator record. validator: " (pr-str validator)) {:validator validator}))))]
     (let [item (convert-to-nested-validator item)]
       (if (vector? item)
         (let [validator (first item)
               result (split-with notopts? (rest item))
               args (first result)
               opts (apply hash-map (second result))]
+          (check-validator validator)
           (merge (assoc validator :args args :path (coerce-key key))
                  (select-keys opts [:coerce :message :optional])))
 
-        (assoc item :args [] :path (coerce-key key))))))
+        (do
+          (check-validator item)
+          (assoc item :args [] :path (coerce-key key)))))))
 
 (defn- normalize-step-map-entry
   [acc key value]
