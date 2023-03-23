@@ -1,4 +1,4 @@
-(defproject org.clojars.t_yano/strict "2.0-SNAPSHOT"
+(defproject org.clojars.t_yano/strict "2.0.0"
   :description "A structural validation library for Clojure(Script)"
   :url "https://github.com/tyano/strict"
   :dependencies [[org.clojure/clojure "1.11.1" :scope "provided"]
