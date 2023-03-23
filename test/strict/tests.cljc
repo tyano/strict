@@ -1,7 +1,7 @@
-(ns struct.tests
+(ns strict.tests
   (:require #?(:cljs [cljs.test :as t]
                :clj [clojure.test :as t])
-            [struct.core :as st]))
+            [strict.core :as st]))
 
 ;; --- Tests
 

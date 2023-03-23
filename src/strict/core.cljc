@@ -1,4 +1,4 @@
-(ns struct.core
+(ns strict.core
   (:refer-clojure :exclude [keyword uuid vector boolean long map set])
   (:require [cuerdas.core :as str]
             [clojure.core :as core]))
