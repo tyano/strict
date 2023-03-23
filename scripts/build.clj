@@ -5,7 +5,7 @@
 (let [start (System/nanoTime)]
   (b/build
    (b/inputs "test" "src" )
-   {:main 'struct.tests
+   {:main 'strict.tests
     :output-to "out/tests.js"
    :output-dir "out/tests"
     :target :nodejs
