@@ -291,6 +291,8 @@ ex)
 
 ### Define your own validator
 
+*Note: There is an incompatibility with the original Struct library. In Struct, validator is plain map, but in Strict, it is Record*
+
 As mentioned previously, the validators in *strict* library are defined using plain data. It is just a `strict.core/Validator` record. For example, this is how the builtin integer validator is defined:
 
 ```clojure
