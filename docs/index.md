@@ -2,8 +2,8 @@
 
 A structural validation library for Clojure and ClojureScript.
 
-**STRICT** is a fork of [funcool/struct](https://github.com/funcool/struct).
-Some new features are added and have some incompatibilities with original *struct* library.
+*Str**i**ct* is a fork of [funcool/struct](https://github.com/funcool/struct).
+Some new features are added and have some incompatibilities with original *Str**u**ct* library.
 
 ## Introduction
 
@@ -23,8 +23,8 @@ Based on similar ideas of [bouncer](https://github.com/leonardoborges/bouncer).
 
 Just include that in your dependency vector on **project.clj**:
 
-```
-org.clojars.t_yano/strict 2.0.0
+```clojure
+[org.clojars.t_yano/strict 2.0.0]
 ```
 
 ## User Guide
@@ -55,7 +55,7 @@ The same schema can be defined using vectors, if the order of validation matters
    [:year st/required st/number]])
 ```
 
-By default, all validators are optional so if the value is missing, no error will reported. If you want make the value mandatory, you should use a specific required validator.
+By default, all validators are optional so **if the value is missing, no error will reported**. If you want make the value mandatory, you should use a specific `st/required` validator.
 
 And finally, start validating your data:
 
@@ -91,7 +91,7 @@ The additional entries in the map are not stripped by default, but this behavior
 ;; => [nil {:name "Blood of Elves" :year 1994}]
 ```
 
-With similar syntax you can validate neested data structures, specifying in the key part the proper path to the neested data structure:
+With similar syntax you can validate nested data structures, specifying in the key part the proper path to the nested data structure:
 
 ```clojure
 (def +scheme+
@@ -102,6 +102,8 @@ With similar syntax you can validate neested data structures, specifying in the 
     (st/validate +scheme+))
 ;; => [{:a {:b "must be a number"}} {:c {:d "bar"}}]
 ```
+
+*Note*: The above facility might be removed in a future version. This facility is derived from the original *Struct* library, but instead of this facility, *Strict* have **Nested Validator** for this purpose.
 
 ### Parametrized validators
 
@@ -117,7 +119,7 @@ In addition to simple validators, one may use additional contraints (e.g. `in-ra
 ;; => [nil {:num 19}]
 ```
 
-Note the double vector; the outer denotes a list of validatiors and the inner denotes a validator with patameters.
+Note **the double vector**; the outer denotes a list of validatiors and the inner denotes a validator with patameters. All validators which have parameters must be wrapped by vector. Only if validator doesn't need parameters, you can ommit the vector.
 
 ### Custom messages
 
@@ -198,7 +200,7 @@ Table 1. Builtin Validators
 |`strict.core/boolean`|no|Validator for boolean.|
 |`strict.core/boolean-str`|yes|Validator for boolean string.|
 |`strict.core/string`|no|Validator for string.|
-|`strict.core/string-str`|yes|Validator for string like.|
+|`strict.core/string-like`|yes|Validator for string like.|
 |`strict.core/in-range`|no|Validator for a number range.|
 |`strict.core/member`|no|Validator for check if a value is member of coll.|
 |`strict.core/positive`|no|Validator for positive number.|
@@ -212,23 +214,92 @@ Table 1. Builtin Validators
 |`strict.core/identical-to`|no|Validator to check that value is identical to other field.|
 |`strict.core/min-count`|no|Validator to check that value is has at least a minimum number of characters.|
 |`strict.core/max-count`|no|Validator to check that value is not larger than a maximum number of characters.|
+|`strict.core/nested`|no|Nest another validation map (schema) and apply it onto the value|
+|`strict.core/coll-of`|no|Accept a validator-vector and apply it on each value in value. the value must be a list.|
 
 Additional notes:
 
 * number-str coerces to java.lang.Double or float (cljs)
 * boolean-str coerces to true ("t", "true", "1") or false ("f", "false", "0").
-* string-str coerces anything to string using str function.
+* string-like coerces anything to string using str function, and the validation always succeed. By using this after other validators, you can coearce the value to string.
+
+
+### `nested` validator (*new facility from Strict 2.0.0*)
+
+You can nest another validator by using `[st/nested another-validator]` and apply the `another-validator` onto the validatee value. It is useful for validating nested map-like value like JSON object.
+
+ex)
+```clojure
+(def user-validator {:name  [[st/nested {:first st/string :last st/string}]]
+                     :age st/integer
+                     :division [[st/nested {:department [[st/nested {:name st/string
+                                                                     :dev st/boolean-str}]]}]]})
+
+;; validate nested maps
+
+(st/validate
+  {:name {:first "First" :last "Name"}
+   :age 12
+   :division {:department {:name "product" :dev "true"}}}
+  user-validator)
+
+;; => [nil {:name {:first "First", :last "Name"}, :age 12, :division {:department {:name "product", :dev true}}}]
+
+
+;; validate nested map with some errors
+
+(st/validate
+  {:name {:first "First" :last "Name"}
+   :age 12
+   :division {:department {:name 111 :dev "true"}}}
+  user-validator)
+
+;; => [{:division {:department {:name "must be a string"}}}
+;;     {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}]
+```
+
+### Automatic convertion from plain hash-map to `nested` validator
+
+All plain maps at the place where validator must appear, automatically be converted to `nested` validator.
+
+The `user-validator` in the previous example can be written more simplly as following:
+
+```clojure
+(def user-validator {:name     {:first st/string :last st/string}
+                     :age      st/integer
+                     :division {:department {:name st/string
+                                             :dev st/boolean-str}}})
+```
+
+### `coll-of` validator (*new facility from Strict 2.0.0*)
+
+You can apply another validator for values in a list by using `st/coll-of` validator.
+
+`st/coll-of` validator accepts a validator-vector as the parameters.
+
+ex)
+```clojure
+(def +schema+ {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]})
+
+(st/validate {:age [10 20 15]} +schema+)
+;; => [nil {:age [10 20 15]}]
+
+(st/validate {:age [10 20 15]} +schema+)
+;; => [{:age [nil nil "not in range 10 and 20"]} {:age [10 20 nil]}]
+```
+
 
 ### Define your own validator
 
-As mentioned previously, the validators in *strict* library are defined using plain hash-maps. For example, this is how the builtin integer validator is defined:
+As mentioned previously, the validators in *strict* library are defined using plain data. It is just a `strict.core/Validator` record. For example, this is how the builtin integer validator is defined:
 
 ```clojure
 (def integer
-  {:message "must be a integer"
-   :optional true
-   :validate integer?}))
+  (st/validator {:message "must be a integer"
+                 :optional true
+                 :validate integer?}))
 ```
+Note: `st/validator` creates a **Validator** record from a supplied hash-map.
 
 If the validator needs access to previously validated data, the :state key should be present with the value true. Let see the identical-to validator as example:
 
@@ -243,6 +314,29 @@ If the validator needs access to previously validated data, the :state key shoul
 ```
 
 Validators that access the state receive an additional argument with the state for validator function.
+
+
+### Validation context (*new facility from Strict 2.0.0*)
+
+the `:validate` function in a validator basically returns a boolean value, but  instead, you can return a 2-value vector of `[validation-result validation-context]`. **validation-result** is just a boolean value as validation result, **validation-context** is a map containing information you can use them after the validation for generation error message.
+
+For using the validation context in message-generation, you should supply a fuction of `[validation-context options args]` to :message key instead of a simple string. *options* is a option-map supplied to `st/validate` function. *args* is a vector containing the parameters in validator-vector (ex: 0 and 10 in `[st/in-range 0 10]`).
+
+ex:
+```clojure
+{:name "value must be from 1 to 20"
+ :optional true
+ :message (fn [{:keys [error-type]} opts args]
+             (str "An error occurred. error-type: " error-type))
+ :validate (fn [v]
+             (let [result-key (cond
+                                (< v 0)  :too-small-value
+                                (> v 20) :too-large-value
+                                :else    :success)
+                   success    (= result-key :success)]
+              [success {:error-type result-key}]))}
+```
+
 
 ## Developers Guide
 
