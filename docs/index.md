@@ -305,12 +305,12 @@ If the validator needs access to previously validated data, the :state key shoul
 
 ```clojure
 (def identical-to
-  {:message "does not match"
-   :optional true
-   :state true
-   :validate (fn [state v ref]
-               (let [prev (get state ref)]
-                 (= prev v)))})
+  (st/validator {:message "does not match"
+                 :optional true
+                 :state true
+                 :validate (fn [state v ref]
+                             (let [prev (get state ref)]
+                               (= prev v)))})
 ```
 
 Validators that access the state receive an additional argument with the state for validator function.
@@ -326,7 +326,7 @@ ex:
 ```clojure
 {:name "value must be from 1 to 20"
  :optional true
- :message (fn [{:keys [error-type]} opts args]
+ :message  (fn [{:keys [error-type]} opts args]
              (str "An error occurred. error-type: " error-type))
  :validate (fn [v]
              (let [result-key (cond
