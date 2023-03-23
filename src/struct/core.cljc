@@ -401,7 +401,7 @@
 (def nested
   (validator {:name "nested"
               :message (fn [{:keys [error]} opts args] error)
-              :optional false
+              :optional true
               :validate (fn [v spec & [opts]]
                           (if-not (map? v)
                             [false {:error "must be a map"}]
