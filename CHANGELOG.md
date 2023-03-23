@@ -1,12 +1,17 @@
 # Changelog #
 
-## Version 1.5.0 ##
+## Version 2.0.0 ##
 
-Date: 2022-05-21
+Date: 2023-03-21
 
-- Added a new validator 'nested'.
+First release of the `strict` library folked from `struct` library.
+
+- Added a new validators 'nested' and `coll-of`.
+- Introduced automatic conversion from plain map to 'nested' validator.
 - validator can return a vector of [validation-result validation-context] typed as [boolean? map?].
 - validator's :message now can be a fn that accepts validation-context, opts and args.
+
+# History of the original struct library #
 
 ## Version 1.3.0 ##
 

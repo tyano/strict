@@ -1,9 +1,9 @@
 # Contributed Code #
 
-In order to keep *struct* completely free and unencumbered by copyright, all new
-contributors to the *struct* code base are asked to dedicate their contributions to
+In order to keep *strict* completely free and unencumbered by copyright, all new
+contributors to the *strict* code base are asked to dedicate their contributions to
 the public domain. If you want to send a patch or enhancement for possible inclusion
-in the *struct* source tree, please accompany the patch with the following
+in the *strict* source tree, please accompany the patch with the following
 statement:
 
     The author or authors of this code dedicate any and all copyright interest
