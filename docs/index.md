@@ -5,6 +5,31 @@ A structural validation library for Clojure and ClojureScript.
 *Str**i**ct* is a fork of [funcool/struct](https://github.com/funcool/struct).
 Some new features are added and have some incompatibilities with original *Str**u**ct* library.
 
+
+<!-- TOC depthfrom:2 orderedlist:true -->
+
+- [1.1. Introduction](#11-introduction)
+- [1.2. Differences from the original *Struct* library](#12-differences-from-the-original-struct-library)
+- [1.3. Install](#13-install)
+- [1.4. User Guide](#14-user-guide)
+    - [1.4.1. Quick Start](#141-quick-start)
+    - [1.4.2. Parametrized validators](#142-parametrized-validators)
+    - [1.4.3. Custom messages](#143-custom-messages)
+    - [1.4.4. Data coercions](#144-data-coercions)
+    - [1.4.5. Builtin Validators](#145-builtin-validators)
+    - [1.4.6. nested validator *new facility from Strict 2.0.0*](#146-nested-validator-new-facility-from-strict-200)
+    - [1.4.7. Automatic convertion from plain hash-map to nested validator](#147-automatic-convertion-from-plain-hash-map-to-nested-validator)
+    - [1.4.8. coll-of validator *new facility from Strict 2.0.0*](#148-coll-of-validator-new-facility-from-strict-200)
+    - [1.4.9. Define your own validator](#149-define-your-own-validator)
+    - [1.4.10. Validation context *new facility from Strict 2.0.0*](#1410-validation-context-new-facility-from-strict-200)
+- [1.5. Developers Guide](#15-developers-guide)
+    - [1.5.1. Contributing](#151-contributing)
+    - [1.5.2. Get the Code](#152-get-the-code)
+    - [1.5.3. Run tests](#153-run-tests)
+    - [1.5.4. License](#154-license)
+
+<!-- /TOC -->
+
 ## Introduction
 
 A structural validation library for Clojure and ClojureScript.
