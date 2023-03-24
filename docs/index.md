@@ -379,7 +379,7 @@ ex:
              (str "An error occurred. error-type: " error-type))
  :validate (fn [v]
              (let [result-key (cond
-                                (< v 0)  :too-small-value
+                                (< v 1)  :too-small-value
                                 (> v 20) :too-large-value
                                 :else    :success)
                    success    (= result-key :success)]
