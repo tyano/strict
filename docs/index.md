@@ -50,7 +50,7 @@ Based on similar ideas of [bouncer](https://github.com/leonardoborges/bouncer).
 <a id="markdown-differences-from-the-original-*struct*-library" name="differences-from-the-original-*struct*-library"></a>
 
 * Can define schema for nested data structure [in natural way (by nested map)](#automatic-convertion-from-plain-hash-map-to-nested-validator)
-* Added a validator for collections that apply other validators on each values in a collection
+* Added [a validator for collections](#coll-of-validator-new-facility-from-strict-200) that apply other validators on each values in a collection
 * Validator can have *Validation Context* with which you can use for generating error message with the information passed from validator function.
 
 
