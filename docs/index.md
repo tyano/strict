@@ -19,6 +19,13 @@ Highlights:
 Based on similar ideas of [bouncer](https://github.com/leonardoborges/bouncer).
 
 
+## Differences from the original *Struct* library
+
+* Can define schema for nested data structure in natural way (by nested map)
+* Added a validator for collections that apply other validators on each values in a collection
+* Validator can have *Validation Context* with which you can use for generating error message with the information passed from validator function.
+
+
 ## Install
 
 Just include that in your dependency vector on **project.clj**:
