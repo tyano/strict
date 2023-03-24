@@ -1,4 +1,5 @@
 # Strict - validation library for Clojure(Script)
+<a id="markdown-strict---validation-library-for-clojurescript" name="strict---validation-library-for-clojurescript"></a>
 
 A structural validation library for Clojure and ClojureScript.
 
@@ -6,31 +7,32 @@ A structural validation library for Clojure and ClojureScript.
 Some new features are added and have some incompatibilities with original *Str**u**ct* library.
 
 
-<!-- TOC depthfrom:2 orderedlist:true -->
+<!-- TOC depthfrom:2 orderedlist:false insertanchor:true -->
 
-- [1.1. Introduction](#11-introduction)
-- [1.2. Differences from the original *Struct* library](#12-differences-from-the-original-struct-library)
-- [1.3. Install](#13-install)
-- [1.4. User Guide](#14-user-guide)
-    - [1.4.1. Quick Start](#141-quick-start)
-    - [1.4.2. Parametrized validators](#142-parametrized-validators)
-    - [1.4.3. Custom messages](#143-custom-messages)
-    - [1.4.4. Data coercions](#144-data-coercions)
-    - [1.4.5. Builtin Validators](#145-builtin-validators)
-    - [1.4.6. nested validator *new facility from Strict 2.0.0*](#146-nested-validator-new-facility-from-strict-200)
-    - [1.4.7. Automatic convertion from plain hash-map to nested validator](#147-automatic-convertion-from-plain-hash-map-to-nested-validator)
-    - [1.4.8. coll-of validator *new facility from Strict 2.0.0*](#148-coll-of-validator-new-facility-from-strict-200)
-    - [1.4.9. Define your own validator](#149-define-your-own-validator)
-    - [1.4.10. Validation context *new facility from Strict 2.0.0*](#1410-validation-context-new-facility-from-strict-200)
-- [1.5. Developers Guide](#15-developers-guide)
-    - [1.5.1. Contributing](#151-contributing)
-    - [1.5.2. Get the Code](#152-get-the-code)
-    - [1.5.3. Run tests](#153-run-tests)
-    - [1.5.4. License](#154-license)
+- [Introduction](#introduction)
+- [Differences from the original *Struct* library](#differences-from-the-original-struct-library)
+- [Install](#install)
+- [User Guide](#user-guide)
+    - [Quick Start](#quick-start)
+    - [Parametrized validators](#parametrized-validators)
+    - [Custom messages](#custom-messages)
+    - [Data coercions](#data-coercions)
+    - [Builtin Validators](#builtin-validators)
+    - [nested validator *new facility from Strict 2.0.0*](#nested-validator-new-facility-from-strict-200)
+    - [Automatic convertion from plain hash-map to nested validator](#automatic-convertion-from-plain-hash-map-to-nested-validator)
+    - [coll-of validator *new facility from Strict 2.0.0*](#coll-of-validator-new-facility-from-strict-200)
+    - [Define your own validator](#define-your-own-validator)
+    - [Validation context *new facility from Strict 2.0.0*](#validation-context-new-facility-from-strict-200)
+- [Developers Guide](#developers-guide)
+    - [Contributing](#contributing)
+    - [Get the Code](#get-the-code)
+    - [Run tests](#run-tests)
+    - [License](#license)
 
 <!-- /TOC -->
 
 ## Introduction
+<a id="markdown-introduction" name="introduction"></a>
 
 A structural validation library for Clojure and ClojureScript.
 
@@ -45,6 +47,7 @@ Based on similar ideas of [bouncer](https://github.com/leonardoborges/bouncer).
 
 
 ## Differences from the original *Struct* library
+<a id="markdown-differences-from-the-original-*struct*-library" name="differences-from-the-original-*struct*-library"></a>
 
 * Can define schema for nested data structure in natural way (by nested map)
 * Added a validator for collections that apply other validators on each values in a collection
@@ -52,6 +55,7 @@ Based on similar ideas of [bouncer](https://github.com/leonardoborges/bouncer).
 
 
 ## Install
+<a id="markdown-install" name="install"></a>
 
 Just include that in your dependency vector on **project.clj**:
 
@@ -60,8 +64,10 @@ Just include that in your dependency vector on **project.clj**:
 ```
 
 ## User Guide
+<a id="markdown-user-guide" name="user-guide"></a>
 
 ### Quick Start
+<a id="markdown-quick-start" name="quick-start"></a>
 
 Let’s require the main **strict** namespace:
 
@@ -138,6 +144,7 @@ With similar syntax you can validate nested data structures, specifying in the k
 *Note*: The above facility might be removed in a future version. This facility is derived from the original *Struct* library, but instead of this facility, *Strict* have **Nested Validator** for this purpose.
 
 ### Parametrized validators
+<a id="markdown-parametrized-validators" name="parametrized-validators"></a>
 
 In addition to simple validators, one may use additional contraints (e.g. `in-range`). This is how they can be passed to the validator:
 
@@ -154,6 +161,7 @@ In addition to simple validators, one may use additional contraints (e.g. `in-ra
 Note **the double vector**; the outer denotes a list of validatiors and the inner denotes a validator with patameters. All validators which have parameters must be wrapped by vector. Only if validator doesn't need parameters, you can ommit the vector.
 
 ### Custom messages
+<a id="markdown-custom-messages" name="custom-messages"></a>
 
 The builtin validators comes with default messages in human readable format, but sometimes you may want to change them (e.g. for i18n purposes). This is how you can do it:
 
@@ -176,6 +184,7 @@ A message can contains format wildcards `%s`, these wildcards will be replaced b
 ```
 
 ### Data coercions
+<a id="markdown-data-coercions" name="data-coercions"></a>
 
 In addition to simple validations, this library includes the ability to coerce values, and a collection of validators that matches over strings. Let’s see some code:
 
@@ -211,6 +220,7 @@ To facilitate this operation, the validate! function receives the data and schem
 ```
 
 ### Builtin Validators
+<a id="markdown-builtin-validators" name="builtin-validators"></a>
 
 This is the table with available builtin validators:
 
@@ -257,6 +267,7 @@ Additional notes:
 
 
 ### `nested` validator (*new facility from Strict 2.0.0*)
+<a id="markdown-nested-validator-*new-facility-from-strict-2.0.0*" name="nested-validator-*new-facility-from-strict-2.0.0*"></a>
 
 You can nest another validator by using `[st/nested another-validator]` and apply the `another-validator` onto the validatee value. It is useful for validating nested map-like value like JSON object.
 
@@ -291,6 +302,7 @@ ex)
 ```
 
 ### Automatic convertion from plain hash-map to `nested` validator
+<a id="markdown-automatic-convertion-from-plain-hash-map-to-nested-validator" name="automatic-convertion-from-plain-hash-map-to-nested-validator"></a>
 
 All plain maps at the place where validator must appear, automatically be converted to `nested` validator.
 
@@ -304,6 +316,7 @@ The `user-validator` in the previous example can be written more simplly as foll
 ```
 
 ### `coll-of` validator (*new facility from Strict 2.0.0*)
+<a id="markdown-coll-of-validator-*new-facility-from-strict-2.0.0*" name="coll-of-validator-*new-facility-from-strict-2.0.0*"></a>
 
 You can apply another validator for values in a list by using `st/coll-of` validator.
 
@@ -322,6 +335,7 @@ ex)
 
 
 ### Define your own validator
+<a id="markdown-define-your-own-validator" name="define-your-own-validator"></a>
 
 *Note: There is an incompatibility with the original Struct library. In Struct, validator is plain map, but in Strict, it is Record*
 
@@ -351,6 +365,7 @@ Validators that access the state receive an additional argument with the state f
 
 
 ### Validation context (*new facility from Strict 2.0.0*)
+<a id="markdown-validation-context-*new-facility-from-strict-2.0.0*" name="validation-context-*new-facility-from-strict-2.0.0*"></a>
 
 the `:validate` function in a validator basically returns a boolean value, but  instead, you can return a 2-value vector of `[validation-result validation-context]`. **validation-result** is just a boolean value as validation result, **validation-context** is a map containing information you can use them after the validation for generation error message.
 
@@ -373,12 +388,15 @@ ex:
 
 
 ## Developers Guide
+<a id="markdown-developers-guide" name="developers-guide"></a>
 
 ### Contributing
+<a id="markdown-contributing" name="contributing"></a>
 
 Just open an issue or pull request in Github.
 
 ### Get the Code
+<a id="markdown-get-the-code" name="get-the-code"></a>
 
 *Strict* is open source and can be found on [github](https://github.com/tyano/strict).
 
@@ -389,6 +407,7 @@ git clone https://github.com/tyano/strict
 ```
 
 ### Run tests
+<a id="markdown-run-tests" name="run-tests"></a>
 
 To run the tests execute the following:
 
@@ -408,6 +427,7 @@ node out/tests.js
 You will need to have nodejs installed on your system.
 
 ### License
+<a id="markdown-license" name="license"></a>
 
 *strict* is under public domain:
 
