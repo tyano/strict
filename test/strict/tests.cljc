@@ -41,11 +41,11 @@
 
 (t/deftest test-parametric-validators
   (let [result1 (st/validate
-                  {:name "foo"}
-                  {:name [[st/min-count 4]]})
+                 {:name "foo"}
+                 {:name [[st/min-count 4]]})
         result2 (st/validate
-                  {:name "bar"}
-                  {:name [[st/max-count 2]]})]
+                 {:name "bar"}
+                 {:name [[st/max-count 2]]})]
     (t/is (= {:name "less than the minimum 4"} (first result1)))
     (t/is (= {:name "longer than the maximum 2"} (first result2)))))
 
@@ -180,19 +180,19 @@
         [error1 data1] (st/validate input1 schema)
         [error2 data2] (st/validate input2 schema)
         [error3 data3] (st/validate input3 schema)]
-    
+
     (t/is (= nil error1))
     (t/is (= {:name {:first "First" :last "Name"}
               :age 12
-              :division {:department {:name "product" :dev true}}} 
+              :division {:department {:name "product" :dev true}}}
              data1))
-    
+
     (t/is (= {:name {:first "must be a string" :last "must be a string"}
               :age "must be a integer"
               :division {:department {:name "must be a string" :dev "must be a boolean"}}}
              error2))
     (t/is (= {} data2))
-    
+
     (t/is (= {:division {:department {:name "must be a string"}}}
              error3))
     (t/is (= {:name {:first "First", :last "Name"}, :age 12, :division {:department {:dev true}}}
@@ -321,6 +321,30 @@
 
     (t/is (= {:age "must be a list"} error1))
     (t/is (= {} data1))))
+
+(t/deftest test-coll-of-validator-on-empty-list-with-allow-empty-option
+  (let [schema {:age [[st/coll-of [st/integer] :allow-empty true]]}
+        input1 {:age []}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= {:age []} data1))))
+
+(t/deftest test-coll-of-validator-on-empty-list-with-allow-empty-false-option
+  (let [schema {:age [[st/coll-of [st/integer] :allow-empty false]]}
+        input1 {:age []}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= {:age "must not be empty"} error1))
+    (t/is (= {} data1))))
+
+(t/deftest test-coll-of-validator-on-empty-list-without-allow-empty-option
+  (let [schema {:age [[st/coll-of [st/integer]]]}
+        input1 {:age []}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= {:age []} data1))))
 
 ;; --- Entry point
 

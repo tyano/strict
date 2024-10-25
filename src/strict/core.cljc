@@ -402,7 +402,7 @@
   (validator {:name "nested"
               :message (fn [{:keys [error]} opts args] error)
               :optional true
-              :validate (fn [v spec & [opts]]
+              :validate (fn [v spec & opts]
                           (if-not (map? v)
                             [false {:error "must be a map"}]
                             (let [[errors success] (validate v spec opts)
@@ -418,13 +418,25 @@
                 :message (fn [{:keys [error]} opts args]
                            error)
                 :optional true
-                :validate (fn [v validators & [opts]]
-                            (if-not (sequential? v)
-                              [false {:error "must be a list"}]
-                              (let [results (core/map #(validate {:value %} {:value validators} opts) v)
-                                    errors  (sequence (comp (core/map first) (core/map :value)) results)
-                                    values  (sequence (comp (core/map second) (core/map :value)) results)
-                                    context {:error (data-or-nil errors) :value (data-or-nil values)}]
-                                (if (data-or-nil errors)
-                                  [false context]
-                                  [true context]))))})))
+                :validate (fn [v validators & opts]
+                            (let [option-map (if (seq opts)
+                                               (->> (partition 2 opts)
+                                                    (mapv vec)
+                                                    (into {}))
+                                               {})]
+                              (cond
+                                (not (sequential? v))
+                                [false {:error "must be a list"}]
+
+                                (and (not (seq v))
+                                     (not (:allow-empty option-map true)))
+                                [false {:error "must not be empty"}]
+
+                                :else
+                                (let [results (core/map #(validate {:value %} {:value validators} opts) v)
+                                      errors  (sequence (comp (core/map first) (core/map :value)) results)
+                                      values  (sequence (comp (core/map second) (core/map :value)) results)
+                                      context {:error (data-or-nil errors) :value (data-or-nil values)}]
+                                  (if (data-or-nil errors)
+                                    [false context]
+                                    [true context])))))})))
