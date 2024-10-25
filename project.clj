@@ -1,6 +1,9 @@
 (defproject org.clojars.t_yano/strict "2.0.0"
   :description "A structural validation library for Clojure(Script)"
   :url "https://github.com/tyano/strict"
+  :license {:name "public domain"
+            :url "https://unlicense.org/"
+            :distribution :repo}
   :dependencies [[org.clojure/clojure "1.12.0" :scope "provided"]
                  [org.clojure/clojurescript "1.11.132" :scope "provided"]
                  [funcool/cuerdas "2.2.1"]]
