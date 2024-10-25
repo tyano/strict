@@ -1,5 +1,11 @@
 # Changelog #
 
+## Version 2.1.0 ##
+
+Date: 2024-11-25
+
+`coll-of` validator now has an :allow-empty option, with which you can allow or disallow empty lists. The default value is true.
+
 ## Version 2.0.0 ##
 
 Date: 2023-03-21
