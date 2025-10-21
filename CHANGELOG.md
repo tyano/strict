@@ -1,5 +1,11 @@
 # Changelog #
 
+## Version 2.1.1 ##
+
+Date: 2025-10-21
+
+`coll-of` now can accept set or map data as collection.
+
 ## Version 2.1.0 ##
 
 Date: 2024-11-25

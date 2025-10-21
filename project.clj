@@ -1,4 +1,4 @@
-(defproject org.clojars.t_yano/strict "2.1.0"
+(defproject org.clojars.t_yano/strict "2.1.1"
   :description "A structural validation library for Clojure(Script)"
   :url "https://github.com/tyano/strict"
   :license {:name "public domain"
