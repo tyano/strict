@@ -425,7 +425,7 @@
                                                     (into {}))
                                                {})]
                               (cond
-                                (not (sequential? v))
+                                (not (coll? v))
                                 [false {:error "must be a list"}]
 
                                 (and (not (seq v))

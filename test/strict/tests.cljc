@@ -316,11 +316,27 @@
 
 (t/deftest test-coll-of-validator-on-not-list-data
   (let [schema {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]}
-        input1 {:age {:test 1}}
+        input1 {:age 20}
         [error1 data1] (st/validate input1 schema)]
 
     (t/is (= {:age "must be a list"} error1))
     (t/is (= {} data1))))
+
+(t/deftest test-coll-of-validator-can-accept-set-data
+  (let [schema {:age [[st/coll-of [st/integer [st/in-range 10 20]]]]}
+        input1 {:age #{10 15 20}}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= #{10 15 20} (set (data1 :age))))))
+
+(t/deftest test-coll-of-validator-can-accept-map-data
+  (let [schema {:age [[st/coll-of [[st/coll-of st/keyword]]]]}
+        input1 {:age {:test :value}}
+        [error1 data1] (st/validate input1 schema)]
+
+    (t/is (= nil error1))
+    (t/is (= {:age '([:test :value])} data1))))
 
 (t/deftest test-coll-of-validator-on-empty-list-with-allow-empty-option
   (let [schema {:age [[st/coll-of [st/integer] :allow-empty true]]}
